@@ -1,35 +1,21 @@
-import { ValidationPipe, VersioningType } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { SerializerInterceptor } from './utils/serializer.interceptor';
-import validationOptions from './utils/validation-options';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { cors: true });
-  const configService = app.get(ConfigService);
-
-  app.enableShutdownHooks();
-  app.setGlobalPrefix(configService.get('app.apiPrefix'), {
-    exclude: ['/'],
-  });
-  app.enableVersioning({
-    type: VersioningType.URI,
-  });
-  app.useGlobalInterceptors(new SerializerInterceptor());
-  app.useGlobalPipes(new ValidationPipe(validationOptions));
+  const app = await NestFactory.create(AppModule);
 
   const options = new DocumentBuilder()
-    .setTitle('API')
-    .setDescription('API docs')
+    .setTitle('Cats example')
+    .setDescription('The cats API description')
     .setVersion('1.0')
+    .addTag('cats')
     .addBearerAuth()
     .build();
-
   const document = SwaggerModule.createDocument(app, options);
-  SwaggerModule.setup('docs', app, document);
+  SwaggerModule.setup('api', app, document);
 
-  await app.listen(configService.get('app.port'));
+  await app.listen(3000);
+  console.log(`Application is running on: ${await app.getUrl()}`);
 }
-void bootstrap();
+bootstrap();
